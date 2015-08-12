@@ -64,7 +64,7 @@ app.get('/getFbFeed', function(req, res) {
             }
         },
         "legend": {
-            "layout": 'vertical',
+            "layout": 'horizontal',
             "verticalAlign": 'top',
             "y": 30,
             "floating": true,
