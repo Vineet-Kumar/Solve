@@ -56,7 +56,12 @@ app.get('/getFbFeed', function(req, res) {
             "renderTo": "container",
             "marginTop": 70
         },
-        "colors" : ["#EEB200","#E3E3D5"],
+        "colors": ["#3F50F3","#EEB200"],
+        "plotOptions" : {
+            "area" : {
+                "fillOpacity" : 1
+            }
+        },
         "title": {
             "text": "Total Coupon Print By Platform",
             "style": {
