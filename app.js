@@ -106,7 +106,7 @@ app.get('/getFbFeed', function(req, res) {
             },
             "gridLineWidth" : 2,
             "gridLineDashStyle": "ShortDot",
-            "gridLineColor" : "#3E3E3E"
+            "gridLineColor" : "#969595"
         },
         "credits": {
             "enabled": false
