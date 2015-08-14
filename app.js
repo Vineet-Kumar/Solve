@@ -5,7 +5,9 @@ parseString = require('xml2js').parseString,
 request = require('request');
 app.use(cors());
 
-
+app.use('/', express.static(__dirname + '/public', {
+    maxAge: (365 * 24 * 60 * 60)
+}));
 
 app.get('/getFbFeed', function(req, res) {
     var fb_url = "https://graph.facebook.com/v2.4/act_790155804435790/insights?access_token=",
@@ -54,18 +56,23 @@ app.get('/getFbFeed', function(req, res) {
         "chart": {
             "type": "area",
             "renderTo": "container",
+            "backgroundColor": 'transparent',
             "marginTop": 70
         },
         "colors": ["#3F50F3","#EEB200"],
         "plotOptions" : {
             "area" : {
-                "fillOpacity" : 1
+                "fillOpacity" : 1,
+                "marker": {
+                    "enabled": false
+                }
             }
         },
         "title": {
             "text": "Total Coupon Print By Platform",
             "style": {
-                "color": "#0E7AAE"
+                "color": "#0E7AAE",
+                "fontFamily": 'ClaireHandBold'
             }
         },
         "legend": {
@@ -74,14 +81,16 @@ app.get('/getFbFeed', function(req, res) {
             "y": 30,
             "floating": true,
             "itemStyle": {
-                "color": "#0E7AAE"
+                "color": "#0E7AAE",
+                "fontFamily": 'ClaireHandRegular'
             }
         },
         "xAxis": {
             "categories": [],
             "labels": {
                 "style": {
-                    "color": "#0E7AAE"
+                    "color": "#0E7AAE",
+                    "fontFamily": 'ClaireHandLight'
                 }
             }
         },
@@ -91,9 +100,13 @@ app.get('/getFbFeed', function(req, res) {
             },
             "labels": {
                 "style": {
-                    "color": "#0E7AAE"
+                    "color": "#0E7AAE",
+                    "fontFamily": 'ClaireHandLight'
                 }
-            }
+            },
+            "gridLineWidth" : 2,
+            "gridLineDashStyle": "ShortDot",
+            "gridLineColor" : "#E3E3D5"
         },
         "credits": {
             "enabled": false
