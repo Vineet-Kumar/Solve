@@ -14,6 +14,8 @@ app.get('/getFbFeed', function(req, res) {
     fb_access_token = "CAAGXaYM1QFcBAEvXMTcZBVP0rNIPsdiBoXzGj6X3o0yZCwz0ZAEUCSpL0WT7BsC4qrPunZCIN8cqpPyWwj9dRdfNKzBC4N4LH5GdVBWTZAuTVHvMxslvRsDYiStZBWZAsVVO9gMZB0yTCILufkyQsRxXRoK5ySdSaH17UYEuw5fSgIVNoftW179p5933U1uXhMA4CjgnhY7k9Do7TQAZBJw5h",
     fb_level = "account",
     fb_time_increment = 1,
+    fb_data_field_name = "offsite_conversion",
+    fb_fields = "actions",
     starts = "2015-07-28",
     ends = "",
     google_refresh_token_url = "https://www.googleapis.com/oauth2/v3/token?client_id=",
@@ -35,7 +37,8 @@ app.get('/getFbFeed', function(req, res) {
         '">',
         '<selector>',
         '<fields>Date</fields>',
-        '<fields>ConvertedClicks</fields>',
+        '<fields>Cost</fields>',
+        '<fields>CostPerEstimatedTotalConversion</fields>',
         '<dateRange>',
         '<min>',
         starts.replace(/-/g, ''),
@@ -151,7 +154,14 @@ app.get('/getFbFeed', function(req, res) {
     }else{
         fb_url += fb_access_token;   
     }
-  
+   if(req.query.fb_fields){
+        fb_url += "&fields="+req.query.fb_fields;
+    }else{
+        fb_url += "&level="+fb_fields ;
+    }
+    if(req.query.fb_data_field_name){
+        fb_data_field_name = req.query.fb_data_field_name;
+    }
     if(req.query.fb_level){
         fb_url += "&level="+req.query.fb_level;
     }else{
@@ -238,11 +248,19 @@ app.get('/getFbFeed', function(req, res) {
     // Sending request to fb api using the request modules of node, the fb feed url is coming from
     // the frontend as a request parameter.
     loadFbData = function(){
+        var actionValue;
         request(fb_url, function (error, response, body) {
             if (!error && response.statusCode == 200) {
                 body = JSON.parse(body);
                 body.data.forEach(function(item,index){
-                    fbAdData[item.date_start] = item.total_actions;
+                    actionValue = 0;
+                    item.actions.forEach(function(action,index){
+                        if(action.action_type === fb_data_field_name){
+                            actionValue = action.value;
+                            return false;
+                        }
+                    })
+                    fbAdData[item.date_start] = actionValue;
                 })
                 mergeData(); // Send the response of the requested url to the frontend.
             }
@@ -263,10 +281,10 @@ app.get('/getFbFeed', function(req, res) {
                 parseString(adbody, function (err, adresult) {
                     if(!err){
                         adresult.report.table[0].row.forEach(function(item,index){
-                            if(isNaN(parseInt(item.$.convertedClicks))){
+                            if(isNaN(item.$.cost/item.$.costEstTotalConv)){
                                 googleAdData[item.$.day] = 0; 
                             }else{
-                                googleAdData[item.$.day] = parseInt(item.$.convertedClicks);
+                                googleAdData[item.$.day] = item.$.cost/item.$.costEstTotalConv;
                             }
                         })
                         loadFbData();
