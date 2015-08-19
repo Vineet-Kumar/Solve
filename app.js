@@ -130,8 +130,10 @@ app.get('/getFbFeed', function(req, res) {
     if(req.query.ends){
         ends =  req.query.ends;
     }else{
+        // Check if current date is lesser than 30th September.
         if(new Date("2015-09-30").getTime() > new Date().getTime()){
             var yesterday = new Date(), month,date,year;
+            // Get the previous date.
             yesterday.setDate(new Date().getDate() -1);
             date = yesterday.getDate();
             year = yesterday.getFullYear();
@@ -145,6 +147,7 @@ app.get('/getFbFeed', function(req, res) {
             ends +=   year+"-"+month+"-"+date
            
         }else{
+            //Else just set the end date to 30th Septeber.
             ends +=   "2015-09-30";  
         }
     }
@@ -270,7 +273,6 @@ app.get('/getFbFeed', function(req, res) {
         request.post({
             headers: {
                 'content-type' : 'application/x-www-form-urlencoded',
-                'accepts' : 'application/XML',
                 'Authorization' : "Bearer "+google_access_token,
                 "developerToken" : google_developerToken,
                 "clientCustomerId" : goggle_clientCustomerId 
@@ -284,7 +286,7 @@ app.get('/getFbFeed', function(req, res) {
                             if(isNaN(item.$.cost/item.$.costEstTotalConv)){
                                 googleAdData[item.$.day] = 0; 
                             }else{
-                                googleAdData[item.$.day] = item.$.cost/item.$.costEstTotalConv;
+                                googleAdData[item.$.day] = parseInt((item.$.cost/item.$.costEstTotalConv).toFixed(0));
                             }
                         })
                         loadFbData();
@@ -306,6 +308,7 @@ app.get('/getFbFeed', function(req, res) {
             }
         });
     }
+    // Get new access token
     refreshToken = function(){
         request.post({
             headers: {
@@ -315,6 +318,7 @@ app.get('/getFbFeed', function(req, res) {
         }, function(error, response, body){
             if (!error && response.statusCode == 200) {
                 body = JSON.parse(body);
+                // Set new access token
                 google_access_token = body.access_token;
                 loadGoogleAdData();
             }else{
