@@ -78,19 +78,20 @@ var mergeAreaWidgetData = function(req, res, next) {
         req.dateArray.forEach(function(item, index) {
             var actionDate = new Date(item),
                 total = 0;
-            if (req.fbAdData[item]) {
-                graphData.fb.push(req.fbAdData[item]);
-                total = total + req.fbAdData[item];
+            if (req.fbAdData[item] && (!isNaN(req.fbAdData[item].spend / req.fbAdData[item].action))) {
+                graphData.fb.push(parseFloat((req.fbAdData[item].spend / req.fbAdData[item].action).toFixed(2)));
             } else {
                 graphData.fb.push(0);
             }
-            if (req.googleAdData[item]) {
-                graphData.google.push(req.googleAdData[item]);
-                total = total + req.googleAdData[item];
+            if (req.googleAdData[item] && (!isNaN(req.googleAdData[item].costEstTotalConv / 1000000))) {
+                graphData.google.push(parseFloat((req.googleAdData[item].costEstTotalConv / 1000000).toFixed(2)));
             } else {
                 graphData.google.push(0);
             }
-            total = parseFloat(total.toFixed(2))
+            if (req.googleAdData[item] && req.fbAdData[item] && !isNaN(req.googleAdData[item].costEstTotalConv) && !isNaN(req.googleAdData[item].cost) && !isNaN(req.fbAdData[item].spend) && !isNaN(req.fbAdData[item].action)) {
+                total = parseFloat((((req.googleAdData[item].cost / 1000000) + req.fbAdData[item].spend) / ((req.googleAdData[item].cost / req.googleAdData[item].costEstTotalConv) + req.fbAdData[item].action)).toFixed(2))
+            }
+
             graphData.total.push(total);
             req.chartData.xAxis.categories.push((actionDate.getMonth() + 1) + "/" + actionDate.getDate());
         });
@@ -136,16 +137,18 @@ var mergeAreaWidgetData = function(req, res, next) {
     parseFbDataLineWidget = function(req, res, next) {
 
         req.fbRawData.forEach(function(item, index) {
-            actionValue = 0;
             item.actions.forEach(function(action, index) {
                 if (action.action_type === req.fb_data_field_name) {
                     if (!isNaN(item.spend / action.value)) {
                         actionValue = parseFloat((item.spend / action.value).toFixed(2));
                     }
+                    req.fbAdData[item.date_start] = {
+                        "spend": item.spend,
+                        "action": action.value
+                    };
                     return false;
                 }
             })
-            req.fbAdData[item.date_start] = actionValue;
         })
 
         next();
@@ -180,10 +183,9 @@ var mergeAreaWidgetData = function(req, res, next) {
     },
     parseGoggleDataLineWidget = function(req, res, next) {
         req.googleRawData.forEach(function(item, index) {
-            if (!isNaN(item.$.costEstTotalConv / 1000000)) {
-                req.googleAdData[item.$.day] = parseFloat((item.$.costEstTotalConv / 1000000).toFixed(2));
-            } else {
-                req.googleAdData[item.$.day] = 0;
+            req.googleAdData[item.$.day] = {
+                "cost": item.$.cost,
+                "costEstTotalConv": item.$.costEstTotalConv
             }
         })
         next();
