@@ -549,61 +549,61 @@ app.get('/getGeckoboardData/line', function(req, res, next) {
 }, refreshToken, loadGoogleAdData, parseGoggleDataLineWidget, loadFbData, parseFbDataLineWidget, createDateList, mergeLineWidgetData);
 app.get('/getGeckoboardData/gauge', function(req, res, next) {
     req.chartData = {
-        chart: {
-            type: 'gauge',
-            renderTo: "container",
-            backgroundColor: 'transparent',
-            marginTop: 70
+        "chart": {
+            "type": 'gauge',
+            "renderTo": "container",
+            "backgroundColor": 'transparent',
+            "marginTop": 20
         },
-        title: {
-            text: 'PROGRESS TOWARDS IMPRESSION GOAL',
-            style: {
+        "title": {
+            "text": 'PROGRESS TOWARDS IMPRESSION GOAL',
+            "style": {
                 "color": "#0E7AAE",
                 "fontFamily": 'ClaireHandBold'
             }
         },
-        pane: {
-            startAngle: -90,
-            endAngle: 90,
-            size: '150%',
-            center: ['50%', '100%'],
-            background: {
-                backgroundColor: 'transparent',
-                borderColor: 'transparent'
+        "pane": {
+            "startAngle": -90,
+            "endAngle": 90,
+            "size": '150%',
+            "center": ['50%', '100%'],
+            "background": {
+                "backgroundColor": 'transparent',
+                "borderColor": 'transparent'
             }
         },
-        yAxis: {
-            min: 0,
-            max: 81000000,
-            minorTickWidth: 0,
-            minorTickLength: 0,
-            tickWidth: 0,
+        "yAxis": {
+            "min": 0,
+            "max": 81000000,
+            "minorTickWidth": 0,
+            "minorTickLength": 0,
+            "tickWidth": 0,
 
-            tickLength: 0,
-            title: {
-                text: null
+            "tickLength": 0,
+            "title": {
+                "text": null
             },
-            plotBands: [{
-                from: 0,
-                to: 27000000,
-                color: '#EEB200'
+            "plotBands": [{
+                "from": 0,
+                "to": 27000000,
+                "color": '#EEB200'
             }, {
-                from: 27000000,
-                to: 54000000,
-                color: '#0E7AAE'
+                "from": 27000000,
+                "to": 54000000,
+                "color": '#0E7AAE'
             }, {
-                from: 54000000,
-                to: 81000000,
-                color: '#3F50A3'
+                "from": 54000000,
+                "to": 81000000,
+                "color": '#3F50A3'
             }]
         },
 
-        series: [{
-            name: 'Impressions',
-            data: []
+        "series": [{
+            "name": 'Impressions',
+            "data": []
         }],
-        credits: {
-            enabled: false
+        "credits": {
+            "enabled": false
         }
 
     };
