@@ -25,22 +25,34 @@ var fb_insight_url = "https://graph.facebook.com/v2.4/act_790155804435790/insigh
         var xml_string = ['<reportDefinition xmlns="https://adwords.google.com/api/adwords/cm/',
             reportId,
             '">',
-            '<selector>',
-            '<fields>Date</fields>',
-            '<fields>Cost</fields>',
-            '<fields>CostPerEstimatedTotalConversion</fields>',
-            '<dateRange>',
-            '<min>',
-            req.dates.starts.replace(/-/g, ''),
-            '</min>',
-            '<max>',
-            req.dates.ends.replace(/-/g, ''),
-            '</max>',
-            '</dateRange>',
+            '<selector>'
+        ].join("");
+        req.google_fields.forEach(function(fieldName, index) {
+            xml_string += '<fields>' + fieldName + '</fields>'
+        })
+        if (!req.query.fullTime) {
+            xml_string += [
+                '<dateRange>',
+                '<min>',
+                req.dates.starts.replace(/-/g, ''),
+                '</min>',
+                '<max>',
+                req.dates.ends.replace(/-/g, ''),
+                '</max>',
+                '</dateRange>'
+            ].join("");
+        }
+        xml_string += [
             '</selector>',
             '<reportName>Custom Account Performance Report</reportName>',
-            '<reportType>ACCOUNT_PERFORMANCE_REPORT</reportType>',
-            '<dateRangeType>CUSTOM_DATE</dateRangeType>',
+            '<reportType>ACCOUNT_PERFORMANCE_REPORT</reportType>'
+        ].join("");
+        if (!req.query.fullTime) {
+            xml_string += '<dateRangeType>CUSTOM_DATE</dateRangeType>'
+        } else {
+            xml_string += '<dateRangeType>ALL_TIME</dateRangeType>'
+        }
+        xml_string += [
             '<downloadFormat>XML</downloadFormat>',
             '</reportDefinition>'
         ].join("");
@@ -100,6 +112,10 @@ var mergeAreaWidgetData = function(req, res, next) {
         req.chartData.series[2].data = graphData.total;
         res.send(req.chartData);
     },
+    mergeGaugeWidgetData = function(req, res, next) {
+        req.chartData.series[0].data[0] = req.fbImpressionData + req.googleImpressionData;
+        res.send(req.chartData);
+    },
     createDateList = function(req, res, next) {
         var date = new Date(req.dates.starts),
             day, month,
@@ -122,7 +138,7 @@ var mergeAreaWidgetData = function(req, res, next) {
         next();
     },
     parseFbDataAreaWidget = function(req, res, next) {
-        req.fbRawData.forEach(function(item, index) {
+        req.fbRawData.data.forEach(function(item, index) {
             actionValue = 0;
             item.actions.forEach(function(action, index) {
                 if (action.action_type === req.fb_data_field_name) {
@@ -136,7 +152,7 @@ var mergeAreaWidgetData = function(req, res, next) {
     },
     parseFbDataLineWidget = function(req, res, next) {
 
-        req.fbRawData.forEach(function(item, index) {
+        req.fbRawData.data.forEach(function(item, index) {
             item.actions.forEach(function(action, index) {
                 if (action.action_type === req.fb_data_field_name) {
                     if (!isNaN(item.spend / action.value)) {
@@ -153,6 +169,10 @@ var mergeAreaWidgetData = function(req, res, next) {
 
         next();
     },
+    parseFbDataGaugeWidget = function(req, res, next) {
+        req.fbImpressionData = parseInt(req.fbRawData.data[0].impressions);
+        next();
+    },
     // Sending request to fb api using the request modules of node, the fb feed url is coming from
     // the frontend as a request parameter.
     loadFbData = function(req, res, next) {
@@ -161,12 +181,12 @@ var mergeAreaWidgetData = function(req, res, next) {
         request(req.fb_data_url, function(error, response, body) {
             if (!error && response.statusCode == 200) {
                 body = JSON.parse(body);
-                req.fbRawData = body.data;
+                req.fbRawData = body;
                 next(); // Send the response of the requested url to the frontend.
             } else {
                 res.send({
                     "success": false,
-                    "error": aderror
+                    "error": error
                 });
             }
         })
@@ -190,7 +210,11 @@ var mergeAreaWidgetData = function(req, res, next) {
         })
         next();
     },
-    loadGoogleAdData = function(req, res, next) {
+    parseGoggleDataGaugeWidget = function(req, res, next) {
+        req.googleImpressionData = parseInt(req.googleRawData[0].$.impressions);
+        next();
+    }
+loadGoogleAdData = function(req, res, next) {
         req.googleAdData = {};
         request.post({
             headers: req.google_insight_data_config.request,
@@ -293,18 +317,20 @@ var mergeAreaWidgetData = function(req, res, next) {
         } else {
             fb_url += "&level=" + fb_level;
         }
-
-        fb_url += "&time_range={'since': '" + req.dates.starts + "', 'until': '";
-
-
-        fb_url += req.dates.ends + "'}";
+        if (!req.query.fullTime) {
+            fb_url += "&time_range={'since': '" + req.dates.starts + "', 'until': '";
 
 
-        if (req.query.time_increment) {
-            fb_url += "&time_increment=" + req.query.fb_time_increment;
-        } else {
-            fb_url += "&time_increment=" + fb_time_increment;
+            fb_url += req.dates.ends + "'}";
+
+
+            if (req.query.time_increment) {
+                fb_url += "&time_increment=" + req.query.fb_time_increment;
+            } else {
+                fb_url += "&time_increment=" + fb_time_increment;
+            }
         }
+
         return fb_url;
     },
     getGoogleRefreshTokenUrl = function(req) {
@@ -423,6 +449,7 @@ app.get('/getGeckoboardData/area', function(req, res, next) {
     };
     req.dates = getDates(req);
     req.fb_data_field_name = "offsite_conversion";
+    req.google_fields = ['Date', 'Cost', 'CostPerEstimatedTotalConversion'];
     req.fb_data_url = getFbInsightDataUrl(req);
     req.google_refresh_token_url = getGoogleRefreshTokenUrl(req);
     req.google_insight_data_config = getGoogleAdDataConfig(req);
@@ -483,8 +510,12 @@ app.get('/getGeckoboardData/line', function(req, res, next) {
                 "style": {
                     "color": "#0E7AAE",
                     "fontFamily": 'ClaireHandLight'
+                },
+                formatter: function() {
+                    return '$' + this.value;
                 }
             },
+            min: 0,
             "gridLineWidth": 2,
             "gridLineDashStyle": "ShortDot",
             "gridLineColor": "#969595"
@@ -506,6 +537,7 @@ app.get('/getGeckoboardData/line', function(req, res, next) {
         }]
     };
     req.dates = getDates(req);
+    req.google_fields = ['Date', 'Cost', 'CostPerEstimatedTotalConversion'];
     req.fb_data_field_name = "offsite_conversion";
     req.fb_data_url = getFbInsightDataUrl(req);
     req.google_refresh_token_url = getGoogleRefreshTokenUrl(req);
@@ -515,4 +547,69 @@ app.get('/getGeckoboardData/line', function(req, res, next) {
     }
     next();
 }, refreshToken, loadGoogleAdData, parseGoggleDataLineWidget, loadFbData, parseFbDataLineWidget, createDateList, mergeLineWidgetData);
+app.get('/getGeckoboardData/gauge', function(req, res, next) {
+    req.chartData = {
+        chart: {
+            type: 'gauge'
+        },
+        title: {
+            text: 'PROGRESS TOWARDS IMPRESSION GOAL'
+        },
+        pane: {
+            startAngle: -90,
+            endAngle: 90,
+            size: '150%',
+            center: ['50%', '100%'],
+            background: {
+                backgroundColor: 'transparent',
+                borderColor: 'transparent'
+            }
+        },
+        yAxis: {
+            min: 0,
+            max: 81000000,
+            minorTickWidth: 0,
+            minorTickLength: 0,
+            tickWidth: 0,
+
+            tickLength: 0,
+            title: {
+                text: null
+            },
+            plotBands: [{
+                from: 0,
+                to: 27000000,
+                color: '#EEB200'
+            }, {
+                from: 27000000,
+                to: 54000000,
+                color: '#0E7AAE'
+            }, {
+                from: 54000000,
+                to: 81000000,
+                color: '#3F50A3'
+            }]
+        },
+
+        series: [{
+            name: 'Impressions',
+            data: []
+        }],
+        credits: {
+            enabled: false
+        }
+
+    };
+    req.dates = getDates(req);
+    req.query.fb_fields = "impressions";
+    req.google_fields = ['Impressions'];
+    req.query.fullTime = true;
+    req.fb_data_url = getFbInsightDataUrl(req);
+    req.google_refresh_token_url = getGoogleRefreshTokenUrl(req);
+    req.google_insight_data_config = getGoogleAdDataConfig(req);
+    if (req.query.fb_data_field_name) {
+        fb_data_field_name = req.query.fb_data_field_name;
+    }
+    next();
+}, refreshToken, loadGoogleAdData, parseGoggleDataGaugeWidget, loadFbData, parseFbDataGaugeWidget, mergeGaugeWidgetData);
 app.listen(process.env.PORT || 3000);
