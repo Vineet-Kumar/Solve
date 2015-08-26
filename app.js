@@ -511,11 +511,11 @@ app.get('/getGeckoboardData/line', function(req, res, next) {
                     "color": "#0E7AAE",
                     "fontFamily": 'ClaireHandLight'
                 },
-                formatter: function() {
+                "formatter": function() {
                     return '$' + this.value;
                 }
             },
-            min: 0,
+            "min": 0,
             "gridLineWidth": 2,
             "gridLineDashStyle": "ShortDot",
             "gridLineColor": "#969595"
