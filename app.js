@@ -550,10 +550,17 @@ app.get('/getGeckoboardData/line', function(req, res, next) {
 app.get('/getGeckoboardData/gauge', function(req, res, next) {
     req.chartData = {
         chart: {
-            type: 'gauge'
+            type: 'gauge',
+            renderTo: "container",
+            backgroundColor: 'transparent',
+            marginTop: 70
         },
         title: {
-            text: 'PROGRESS TOWARDS IMPRESSION GOAL'
+            text: 'PROGRESS TOWARDS IMPRESSION GOAL',
+            style: {
+                "color": "#0E7AAE",
+                "fontFamily": 'ClaireHandBold'
+            }
         },
         pane: {
             startAngle: -90,
