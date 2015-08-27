@@ -2,8 +2,14 @@ var express = require("express"),
     app = express(),
     cors = require('cors'),
     parseString = require('xml2js').parseString,
+    bodyParser = require('body-parser'),
     request = require('request');
 app.use(cors());
+
+app.use(bodyParser.json()); // to support JSON-encoded bodies
+app.use(bodyParser.urlencoded({ // to support URL-encoded bodies
+    extended: true
+}));
 
 app.use('/', express.static(__dirname + '/public', {
     maxAge: (365 * 24 * 60 * 60)
