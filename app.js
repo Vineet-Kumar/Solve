@@ -18,6 +18,7 @@ var fb_insight_url = "https://graph.facebook.com/v2.4/act_790155804435790/insigh
     fb_access_token = "CAAGXaYM1QFcBAEvXMTcZBVP0rNIPsdiBoXzGj6X3o0yZCwz0ZAEUCSpL0WT7BsC4qrPunZCIN8cqpPyWwj9dRdfNKzBC4N4LH5GdVBWTZAuTVHvMxslvRsDYiStZBWZAsVVO9gMZB0yTCILufkyQsRxXRoK5ySdSaH17UYEuw5fSgIVNoftW179p5933U1uXhMA4CjgnhY7k9Do7TQAZBJw5h",
     fb_level = "account",
     fb_time_increment = 1,
+    fb_limit = 100,
     fb_fields = "actions",
     google_refreshtoken_url = "https://www.googleapis.com/oauth2/v3/token?",
     google_refresh_token = "1/P0Bo3fVSm6cMrDRKhjrvbFSkPfc9uLSgPV3pMy4QnQs",
@@ -330,13 +331,17 @@ loadGoogleAdData = function(req, res, next) {
             fb_url += req.dates.ends + "'}";
 
 
-            if (req.query.time_increment) {
+            if (req.query.fb_time_increment) {
                 fb_url += "&time_increment=" + req.query.fb_time_increment;
             } else {
                 fb_url += "&time_increment=" + fb_time_increment;
             }
+            if (req.query.fb_limit) {
+                fb_url += "&limit=" + req.query.fb_limit;
+            } else {
+                fb_url += "&limit=" + fb_limit;
+            }
         }
-
         return fb_url;
     },
     getGoogleRefreshTokenUrl = function(req) {
@@ -517,7 +522,8 @@ app.get('/getGeckoboardData/line', function(req, res, next) {
                     "color": "#0E7AAE",
                     "fontFamily": 'ClaireHandLight'
                 },
-                "formatter": function() {
+                formatter: function() {
+                    console.log("here");
                     return '$' + this.value;
                 }
             },
