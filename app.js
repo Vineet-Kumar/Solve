@@ -117,7 +117,9 @@ var mergeAreaWidgetData = function(req, res, next) {
         req.chartData.series[0].data = graphData.fb;
         req.chartData.series[1].data = graphData.google;
         req.chartData.series[2].data = graphData.total;
-        res.send(req.chartData);
+        var send = Object.create(req.chartData);
+        req.chartData = null;
+        res.type('plain').send(send);
     },
     mergeGaugeWidgetData = function(req, res, next) {
         req.chartData.series[0].data[0] = req.fbImpressionData + req.googleImpressionData;
@@ -522,7 +524,7 @@ app.get('/getGeckoboardData/line', function(req, res, next) {
                     "color": "#0E7AAE",
                     "fontFamily": 'ClaireHandLight'
                 },
-                formatter: function() {
+                "formatter": function() {
                     console.log("here");
                     return '$' + this.value;
                 }
