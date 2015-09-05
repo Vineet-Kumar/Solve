@@ -476,6 +476,7 @@ app.get('/getGeckoboardData/area', function(req, res, next) {
         "xAxis": {
             "categories": [],
             "labels": {
+                "step": 7,
                 "style": {
                     "color": "#0E7AAE",
                     "fontFamily": 'ClaireHandLight'
@@ -554,9 +555,13 @@ app.get('/getGeckoboardData/line', function(req, res, next) {
                 "fontFamily": 'ClaireHandRegular'
             }
         },
+        "tooltip": {
+            "pointFormat": '<span style="color: {series.color};">{series.name}</span>: <b>${point.y}</b><br/>'
+        },
         "xAxis": {
             "categories": [],
             "labels": {
+                "step": 7,
                 "style": {
                     "color": "#0E7AAE",
                     "fontFamily": 'ClaireHandLight'
