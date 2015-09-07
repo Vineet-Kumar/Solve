@@ -145,7 +145,7 @@ var mergeAreaWidgetData = function(req, res, next) {
             "value": "$" + overallData.cpm
         }, {
             "label": "TOTAL PRINTS",
-            "value": overallData.prints
+            "value": "" + overallData.prints
         }, {
             "label": "COST PER PRINT",
             "value": "$" + overallData.costPerPrint
