@@ -450,6 +450,7 @@ app.get('/getGeckoboardData/area', function(req, res, next) {
         "colors": ["#3F50F3", "#EEB200"],
         "plotOptions": {
             "area": {
+                "stacking": 'normal',
                 "fillOpacity": 1,
                 "marker": {
                     "enabled": false
