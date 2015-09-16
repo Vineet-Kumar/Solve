@@ -129,7 +129,7 @@ var mergeAreaWidgetData = function(req, res, next) {
             responseData = {
                 "items": []
             };
-        overallData.spend = req.fbOverallData.spend + parseFloat((req.googleOverallData.cost / 1000000).toFixed(2));
+        overallData.spend = parseFloat((req.fbOverallData.spend + (req.googleOverallData.cost / 1000000)).toFixed(2));
         overallData.impressions = req.fbOverallData.impressions + parseInt(req.googleOverallData.impressions);
         overallData.cpm = parseFloat((overallData.spend / (overallData.impressions / 1000)).toFixed(2));
         overallData.prints = parseFloat((req.fbOverallData.actions + (req.googleOverallData.cost / req.googleOverallData.costEstTotalConv)).toFixed(2));
